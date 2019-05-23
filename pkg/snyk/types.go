@@ -28,7 +28,7 @@ type Project struct {
 	Created               time.Time             `json:"created"`
 	Origin                string                `json:"origin"`
 	Type                  string                `json:"type"`
-	ReadOnly              string                `json:"readOnly"`
+	ReadOnly              bool                `json:"readOnly"`
 	TestFrequency         string                `json:"testFrequency"`
 	TotalDependencies     int                   `json:"totalDependencies"`
 	IssueCountsBySeverity IssueCountsBySeverity `json:"issueCountsBySeverity"`

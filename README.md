@@ -9,7 +9,10 @@ I make no guarantees about any of the interfaces :warning:
 
 
 Tests are non-existant right now and will appear as time permits
-
+### install
+```
+go get -u github.com/securityclippy/snyker
+```
 
 ## Basic Usage:
 
