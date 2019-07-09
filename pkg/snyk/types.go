@@ -41,3 +41,10 @@ type IssueCountsBySeverity struct {
 	High   int `json:"high"`
 	Medium int `json:"medium"`
 }
+
+
+type ProjectSettings struct {
+	PullRequestTestEnabled bool `json:"pullRequestTestEnabled"`
+	PullRequestFailOnAnyVulns bool `json:"pullRequestFailOnAnyVulns"`
+	PullRequestFailOnlyHighSeverity bool `json:"pullRequestFailOnlyForHighSeverity"`
+}

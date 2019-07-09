@@ -8,8 +8,8 @@ import (
 type OutWriter struct {
 }
 
-func (o *OutWriter) Write(output string, input interface{}) {
-	switch output {
+func (o *OutWriter) Write(outputType string, input interface{}) {
+	switch outputType {
 	case "json":
 		fmt.Println(o.jsonOut(input))
 	}

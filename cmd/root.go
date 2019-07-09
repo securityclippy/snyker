@@ -16,15 +16,17 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/securityclippy/snyker/pkg/outwriter"
 	"github.com/securityclippy/snyker/pkg/snykclient"
 	"github.com/sirupsen/logrus"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"encoding/json"
 )
 
 var cfgFile string
@@ -32,7 +34,18 @@ var SnykClient *snykclient.SnykClient
 var log *logrus.Logger
 var output string
 var Out *outwriter.OutWriter
+var Org string
+var SnykConfig SnykCfg
 
+
+type SnykCfg struct {
+	Orgs []SnykOrg `json:"orgs"`
+}
+
+type SnykOrg struct {
+	Name string `json:"name"`
+	APIKey string `json:"api_key"`
+}
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "snyker",
@@ -55,20 +68,57 @@ func Execute() {
 }
 
 func init() {
+	SnykConfig = SnykCfg{}
 	cobra.OnInitialize(initConfig)
-	SnykClient = snykclient.NewSnykClient(os.Getenv("SNYK_TOKEN"))
-	log = logrus.New()
-	Out = &outwriter.OutWriter{}
+
+	file, err := ioutil.ReadFile()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
+	err = json.Unmarshal(file, &SnykConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(SnykConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.snyker.yaml)")
+	rootCmd.PersistentFlags().StringVar(&Org, "org", "", "snyk org to use")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.Flags().StringVarP(&output, "output", "o", "json", "output type")
+	rootCmd.Flags().StringVarP(&output, "output", "", "json", "output type")
+	//rootCmd.PersistentFlags().StringVarP()
+
+	Orgs := SnykConfig.Orgs
+
+
+	for _, o := range Orgs {
+		fmt.Println(o)
+	}
+
+	switch {
+	case len(Orgs) > 1:
+		for _, o := range Orgs {
+			fmt.Println(o)
+			if o.Name == Org {
+				SnykClient = snykclient.NewSnykClient(o.APIKey)
+			}
+			fmt.Printf("Using Org: %s", o.Name)
+		}
+	case len(Orgs) == 1:
+		SnykClient = snykclient.NewSnykClient(Orgs[0].APIKey)
+	default:
+		SnykClient = snykclient.NewSnykClient(os.Getenv("SNYK_TOKEN"))
+	}
+	fmt.Printf("Using Org: %s\n", SnykClient.Org)
+	log = logrus.New()
+	Out = &outwriter.OutWriter{}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -95,4 +145,5 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
 }

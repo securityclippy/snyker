@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -28,6 +29,14 @@ func NewSnykClient(authToken string) *SnykClient {
 		Client:    c,
 		AuthToken: authToken,
 	}
+
+	err := sc.mustSetOrgID()
+	err = sc.mustSetOrgname()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
 	return sc
 }
 
@@ -75,8 +84,28 @@ func (s *SnykClient) getOrgID() (string, error) {
 	return out.Orgs[0].ID, nil
 }
 
+func (s *SnykClient) getOrgName() (string, error) {
+	out, err := s.ListOrgs()
+	if err != nil {
+		return "", nil
+	}
+	if s.Org != "" {
+		for _, o := range out.Orgs {
+			if o.Name == s.Org {
+				return o.ID, nil
+			}
+		}
+	}
+	return out.Orgs[0].Name, nil
+
+}
+
 func (s *SnykClient) setOrgID(id string) {
 	s.OrgID = id
+}
+
+func (s *SnykClient) setOrgName(name string) {
+	s.Org = name
 }
 
 func (s *SnykClient) mustSetOrgID() error {
@@ -85,5 +114,15 @@ func (s *SnykClient) mustSetOrgID() error {
 		return err
 	}
 	s.setOrgID(id)
+	return nil
+}
+
+func (s *SnykClient) mustSetOrgname() error {
+	name, err := s.getOrgName()
+	if err != nil {
+		return err
+	}
+
+	s.setOrgName(name)
 	return nil
 }
