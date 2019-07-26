@@ -101,7 +101,12 @@ func (s *SnykClient) getOrgName() (string, error) {
 			}
 		}
 	}
-	return out.Orgs[0].Name, nil
+
+	if len(out.Orgs) > 0 {
+
+		return out.Orgs[0].ID, nil
+	}
+	return "", errors.New("no orgID found")
 
 }
 
