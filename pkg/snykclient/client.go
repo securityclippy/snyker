@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -21,7 +20,7 @@ type SnykClient struct {
 	OrgID     string
 }
 
-func NewSnykClient(authToken string) *SnykClient {
+func NewSnykClient(authToken string) (*SnykClient, error) {
 	c := &http.Client{
 		Timeout: time.Second * 30,
 	}
@@ -34,11 +33,11 @@ func NewSnykClient(authToken string) *SnykClient {
 	err := sc.mustSetOrgID()
 	err = sc.mustSetOrgname()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 
-	return sc
+	return sc, nil
 }
 
 func (s *SnykClient) newRequest(method, url string, payload io.Reader) (*http.Request, error) {
