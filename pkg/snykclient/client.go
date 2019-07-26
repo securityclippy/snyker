@@ -1,6 +1,7 @@
 package snykclient
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -81,7 +82,11 @@ func (s *SnykClient) getOrgID() (string, error) {
 			}
 		}
 	}
-	return out.Orgs[0].ID, nil
+	if len(out.Orgs) > 0 {
+
+		return out.Orgs[0].ID, nil
+	}
+	return "", errors.New("no orgID found")
 }
 
 func (s *SnykClient) getOrgName() (string, error) {
