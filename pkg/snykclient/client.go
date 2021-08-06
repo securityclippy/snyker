@@ -18,6 +18,7 @@ type SnykClient struct {
 	AuthToken string
 	Org       string
 	OrgID     string
+	ECRIntegrationID string
 }
 
 func NewSnykClient(authToken string) (*SnykClient, error) {
@@ -47,6 +48,8 @@ func (s *SnykClient) newRequest(method, url string, payload io.Reader) (*http.Re
 	}
 	header := http.Header{}
 	header.Set("Authorization", fmt.Sprintf("token: %s", s.AuthToken))
+	header.Set("Content-Type", "application/json")
+	header.Set("User-Agent", "Snyker")
 	req.Header = header
 	//req.Header.Set("Authorization", fmt.Sprintf("JWT %s", c.AuthToken))
 	return req, nil
@@ -60,6 +63,10 @@ func (s *SnykClient) doRequest(method, url string, payload io.Reader) ([]byte, e
 	resp, err := s.Client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
