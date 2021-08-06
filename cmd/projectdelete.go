@@ -32,7 +32,8 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(projectName) > 0 {
-			err := SnykClient.DeleteProjectByName(projectName)
+			//TODO, this isn't implemented
+			err := SnykClient.DeleteProjectByID("")
 			if err != nil {
 				log.Fatal(err)
 			}
