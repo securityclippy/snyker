@@ -68,20 +68,8 @@ func Execute() {
 }
 
 func init() {
+	log = logrus.New()
 	SnykConfig = SnykCfg{}
-	cobra.OnInitialize(initConfig)
-
-	file, err := ioutil.ReadFile()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-
-	err = json.Unmarshal(file, &SnykConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(SnykConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -102,19 +90,29 @@ func init() {
 		fmt.Println(o)
 	}
 
+	var err error
 	switch {
 	case len(Orgs) > 1:
 		for _, o := range Orgs {
 			fmt.Println(o)
 			if o.Name == Org {
-				SnykClient = snykclient.NewSnykClient(o.APIKey)
+				SnykClient, err = snykclient.NewSnykClient(o.APIKey)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 			fmt.Printf("Using Org: %s", o.Name)
 		}
 	case len(Orgs) == 1:
-		SnykClient = snykclient.NewSnykClient(Orgs[0].APIKey)
+		SnykClient, err = snykclient.NewSnykClient(Orgs[0].APIKey)
+		if err != nil {
+			log.Fatal(err)
+		}
 	default:
-		SnykClient = snykclient.NewSnykClient(os.Getenv("SNYK_TOKEN"))
+		SnykClient, err = snykclient.NewSnykClient(os.Getenv("SNYK_TOKEN"))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	fmt.Printf("Using Org: %s\n", SnykClient.Org)
 	log = logrus.New()
@@ -140,6 +138,17 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
+
+	js, err := ioutil.ReadFile(viper.ConfigFileUsed())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = json.Unmarshal(js, &SnykConfig)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
