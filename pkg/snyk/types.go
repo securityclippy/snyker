@@ -48,3 +48,12 @@ type ProjectSettings struct {
 	PullRequestFailOnAnyVulns bool `json:"pullRequestFailOnAnyVulns"`
 	PullRequestFailOnlyHighSeverity bool `json:"pullRequestFailOnlyForHighSeverity"`
 }
+
+
+
+type ECRPost struct {
+	Target Target `json:"target"`
+}
+type Target struct {
+	Name string `json:"name"`
+}
