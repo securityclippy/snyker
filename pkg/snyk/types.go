@@ -40,6 +40,7 @@ type IssueCountsBySeverity struct {
 	Low    int `json:"low"`
 	High   int `json:"high"`
 	Medium int `json:"medium"`
+	Critical int `json:"critical"`
 }
 
 
